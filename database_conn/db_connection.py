@@ -1,24 +1,4 @@
-import os
-import psycopg2
-#
-# connection = psycopg2.connect(
-#     dbname="postgres",
-#     user="postgres",
-#     password="root",
-#     host="localhost",
-#     port="5432"
-# )
 
-# Create a cursor object
-# cursor = connection.cursor()
-
-# cursor.execute("SELECT * FROM users")
-# rows = cursor.fetchall()
-#
-# for row in rows:
-#     print(row)
-
-import psycopg2
 import psycopg2
 class DBConnection:
     conn_params = {

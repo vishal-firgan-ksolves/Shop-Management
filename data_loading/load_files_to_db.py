@@ -6,7 +6,6 @@ from concurrent.futures import ThreadPoolExecutor
 from database_conn.db_connection import DBConnection
 from psycopg2 import connect
 
-# from database_conn.db_connection import DBConnection
 
 class ZipExtractor:
     def __init__(self, zip_path, extract_to):
