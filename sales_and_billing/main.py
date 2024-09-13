@@ -1,19 +1,38 @@
 from database_conn.db_connection import DBConnection
 from orders import Order
-
+from constants.constants import SCHEMA_NAME,PRODUCTS_TABLE
 import datetime
 from security.user import User
-
+from customer_management.customer_manager import Customer
+from product_recommendation.recommendation_service import ProductRecommendationService
 def generate_order_id():
     prefix = "OR"
     timestamp = datetime.datetime.now().strftime("%y%m%d%H%M%S")
     return prefix + timestamp
 
 def process_order():
+    print("===========================================")
+    list_low_stock_products()
+    print("===========================================")
+    print()
     order_id = generate_order_id()
+    new_custo=input("New customer? y/n :").lower()
+    customer_id=None
+    if new_custo=='y':
+        cname=input("Enter name of customer:")
+        ccontact_no=input("Enter conatact no of customer:")
+        cemail=input("Enter email of customer: ")
+        caddress=input("Enter address of customer: ")
+        Customer.create_customer(cname,ccontact_no,cemail,caddress)
+        print("Customer created with id: ",Customer.get_customer_by_name(cname)[0])
+
     customer_id = int(input("Enter Customer ID: "))
     payment_method = input("Enter Payment Method: ")
-    list_low_stock_products()
+    print("Some Recommended Products for customer ",customer_id)
+    print("===========================================")
+    print()
+    ProductRecommendationService.recommend_products_for_customer(customer_id)
+
     order = Order(order_id, customer_id, payment_method)
     while True:
         product_id = int(input("Enter Product ID (or 0 to finish): "))
@@ -21,9 +40,9 @@ def process_order():
         if product_id == 0:
             break
 
-        # Fetch product details including current quantity,id and expiry_date
+        # getting  product details including current quantity,id and expiry_date
         product_info = DBConnection.fetch_one(
-            "SELECT product_id, quantity,expiry_date FROM shopdb.products WHERE product_id = %s",
+            f"SELECT product_id, quantity,expiry_date FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} WHERE product_id = %s",
             (product_id,))
 
         if product_info is None:
@@ -62,9 +81,9 @@ def process_order():
 def list_low_stock_products():
     threshold=15
 
-    fetch_query = """
+    fetch_query = f"""
       SELECT product_id, name, quantity
-      FROM shopdb.products
+      FROM {SCHEMA_NAME}.{PRODUCTS_TABLE}
       WHERE quantity < %s
       """
     try:
@@ -104,6 +123,7 @@ def main():
                 break
 
     else:
+        DBConnection.close()
         print("Authentication failed.")
 
 

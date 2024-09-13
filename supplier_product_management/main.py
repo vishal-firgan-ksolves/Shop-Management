@@ -1,6 +1,20 @@
+from supplier_product_management.email_service import EmailService
 from suppliers import Suppliers
 from database_conn.db_connection import DBConnection
 from order_from_supplier import PurchaseOrders,Products
+from security.user import User
+from inventory_report.inventory_reports import InventoryReport
+
+def authenticate_user():
+    username = input("Enter  username: ")
+    password = input("Enter  password: ")
+
+    if User.authenticate_user(username, password):
+        print("Admin authenticated successfully.")
+        return True
+    else:
+        print("Authentication failed.")
+        return False
 
 def menu():
     while True:
@@ -13,6 +27,8 @@ def menu():
         if choice == '1':
             print("1. Create Supplier")
             print("2. Delete Supplier")
+            print("3. View Supplier")
+            print("4. View All Suppliers")
             supplier_choice = input("Enter your choice: ")
 
             if supplier_choice == '1':
@@ -24,14 +40,20 @@ def menu():
             elif supplier_choice == '2':
                 supplier_id = int(input("Enter the supplier ID to delete: "))
                 Suppliers.delete_supplier(supplier_id)
+            elif supplier_choice=='3':
+                supplier_id = int(input("Enter the supplier ID: "))
+                Suppliers.view_supplier()
+            elif supplier_choice=='4':
+                Suppliers.list_all_suppliers()
             else:
                 print("Invalid choice.")
 
         elif choice == '2':
              print("1. Create Order")
-             print("2.  Delete Order")
+             print("2. Delete Order")
              print("3. View Order")
              print("4. View All Orders")
+             print("5. Send Mail For Low Stock Products")
              order_choice = input("Enter your choice: ")
 
              if order_choice == '1':
@@ -45,16 +67,14 @@ def menu():
                     # items.append((product_id, quantity))
                     PurchaseOrders.create_order(supplier_id,product_id,quantity)
 
-
              elif order_choice == '2':
                 order_id = int(input("Enter the order ID to delete: "))
                 PurchaseOrders.delete_order(order_id)
 
-
              elif order_choice == '3':
                 order_id = int(input("Enter the order ID to view: "))
                 order = PurchaseOrders.fetch_order(order_id)
-                print(order)
+                print(f"Order_id:{order[0]}| sup_id: {order[1]} | order_date:{order[2]} | product_id:{order[3]} | quantity_ordered: {order[4]} | total_amount: {order[5]}")
 
              elif order_choice == '4':
                 orders = PurchaseOrders.fetch_all_orders()
@@ -64,10 +84,23 @@ def menu():
                     # print(order)
                     print(f"Order_id:{order[0]}| sup_id: {order[1]} | order_date:{order[2]} | product_id:{order[3]} | quantity_ordered: {order[4]} | total_amount: {order[5]}")
 
+             elif order_choice=='5':
+                 supplier = "supplier"
+                 low_stock_products=InventoryReport.get_low_stock_products()
+                 subject = "Stock Ordering Request"
+                 to_email = "supplier@example.com"
+                 from_email = "sender@example.com"
 
+                 # Call the send_email method
+                 EmailService.send_email(
+                     to_name=supplier,
+                     low_stock_products=low_stock_products,
+                     subject=subject,
+                     to_email=to_email,
+                     from_email=from_email
+                 )
              else:
                 print("Invalid choice.")
-
         elif choice == '3':
              print("1. Create Product")
              print("2. Update Product")
@@ -123,10 +156,9 @@ def menu():
           print("Invalid choice. Please enter a valid number.")
 
 if __name__ == "__main__":
-    DBConnection.get_connection()
 
     try:
-        is_valid = Suppliers.authenticate_admin()
+        is_valid = authenticate_user()
 
         if is_valid:
             # while True:
@@ -258,7 +290,7 @@ if __name__ == "__main__":
             #         print("Invalid choice. Please enter a valid number.")
             menu()
         else:
-            flag=Suppliers.authenticate_admin()
+            flag=authenticate_user()
             if flag:
                 menu()
 

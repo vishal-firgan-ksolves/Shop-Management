@@ -12,6 +12,9 @@ import os
 from database_conn.db_connection import DBConnection
 from sales import Sale
 from transactions import Transaction
+from constants.constants import SCHEMA_NAME, PRODUCTS_TABLE, CUSTOMERS_TABLE, USERS_TABLE, ORDERS_TABLE, \
+    ORDER_DETAILS_TABLE
+
 
 class Order:
     def __init__(self, order_id, customer_id, payment_method):
@@ -32,7 +35,7 @@ class Order:
         })
 
     def fetch_product_details(self, product_id):
-        query = "SELECT price, price, quantity, expiry_date FROM shopdb.products WHERE product_id = %s"
+        query = f"SELECT price, price, quantity, expiry_date FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} WHERE product_id = %s"
         result = DBConnection.fetch_one(query, (product_id,))
         if result:
          return result
@@ -40,7 +43,7 @@ class Order:
            print("product not found!")
 
     def fetch_product_name(self, product_id):
-        query = "SELECT name,price FROM shopdb.products WHERE product_id = %s"
+        query = f"SELECT name,price FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} WHERE product_id = %s"
         result = DBConnection.fetch_one(query, (product_id,))
         if result:
             print("Found the product.....")
@@ -77,8 +80,8 @@ class Order:
         self.calculate_totals()
 
         # Insert into orders table
-        query = """
-        INSERT INTO shopdb.orders (
+        query = f"""
+        INSERT INTO {SCHEMA_NAME}.{ORDERS_TABLE} (
             order_id, customer_id, order_date, payment_method, total_amount, discount_amt, final_amount
         ) VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
@@ -99,8 +102,8 @@ class Order:
             product_name = self.fetch_product_name(detail['product_id'])[0]
 
             # Insert into order_details table
-            query = """
-            INSERT INTO shopdb.order_details (
+            query = f"""
+            INSERT INTO {SCHEMA_NAME}.{ORDER_DETAILS_TABLE} (
                 order_id, product_id, product_name, quantity, price, sell_price, discount_per_unit
             ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
@@ -141,8 +144,8 @@ class Order:
         transaction.create_transaction()
 
     def update_product_quantity(self, product_id, quantity):
-        query = """
-        UPDATE shopdb.products
+        query = f"""
+        UPDATE {SCHEMA_NAME}.{PRODUCTS_TABLE}
         SET quantity = quantity - %s
         WHERE product_id = %s
         """
@@ -152,9 +155,9 @@ class Order:
     @staticmethod
     def remove_expired_products():
         # Fetch expired products (optional, for reporting/logging)
-        fetch_query = """
+        fetch_query = f"""
         SELECT name, expiry_date 
-        FROM shopdb.products 
+        FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} 
         WHERE expiry_date < CURRENT_DATE
         """
         expired_products = DBConnection.fetch_all(fetch_query)
@@ -168,8 +171,8 @@ class Order:
             print("No expired products found.")
 
         # Delete expired products
-        delete_query = """
-        DELETE FROM shopdb.products 
+        delete_query = f"""
+        DELETE FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} 
         WHERE expiry_date < CURRENT_DATE
         """
         try:

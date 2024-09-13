@@ -1,12 +1,14 @@
 import bcrypt
 from database_conn.db_connection import DBConnection
+from constants.constants import SCHEMA_NAME, USERS_TABLE
+
 
 class User:
     @staticmethod
     def create_user(username, password, role):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        query = """
-        INSERT INTO shopdb.users (username, password, role)
+        query = f"""
+        INSERT INTO {SCHEMA_NAME}.{USERS_TABLE} (username, password, role)
         VALUES (%s, %s, %s);
         """
         params = (username, hashed_password.decode('utf-8'), role)
@@ -36,16 +38,17 @@ class User:
           return
 
         params.append(userid)
-        query = f"UPDATE users SET {', '.join(updates)} WHERE userid = %s"
+        query = f"UPDATE {SCHEMA_NAME}.{USERS_TABLE} SET {', '.join(updates)} WHERE user_id = %s"
         try:
             DBConnection.execute_query(query, params)
+            print("User updated successfully.")
         except Exception as e:
             print(f"Error updating user: {e}")
 
     @staticmethod
     def delete_user(userid):
 
-        query = "DELETE FROM users WHERE userid = %s"
+        query = f"DELETE FROM {SCHEMA_NAME}.{USERS_TABLE} WHERE user_id = %s"
         try:
             DBConnection.execute_query(query, (userid,))
             print("User deleted successfully.")
@@ -55,7 +58,7 @@ class User:
     @staticmethod
     def authenticate_user(username, password):
 
-        query = "SELECT password FROM shopdb.users WHERE username = %s"
+        query = f"SELECT password FROM {SCHEMA_NAME}.{USERS_TABLE} WHERE username = %s"
         try:
             result = DBConnection.fetch_one(query, (username,))
             if result:
@@ -69,7 +72,7 @@ class User:
 
     @staticmethod
     def get_role(username):
-        query = "SELECT role FROM shopdb.users WHERE username = %s"
+        query = f"SELECT role FROM {SCHEMA_NAME}.{USERS_TABLE} WHERE username = %s"
         try:
             result = DBConnection.fetch_one(query, (username,))
             if result:
@@ -82,7 +85,7 @@ class User:
     @staticmethod
     def authorize_user(username, required_role):
 
-        query = "SELECT role FROM shopdb.users WHERE username = %s"
+        query = f"SELECT role FROM {SCHEMA_NAME}.{USERS_TABLE} WHERE username = %s"
         try:
             result = DBConnection.fetch_one(query, (username,))
             if result:
@@ -94,21 +97,3 @@ class User:
             return False
 
 
-if __name__ == "__main__":
-    # Create a new user
-    user_id = User.create_user('emp1', 'emp123', 'emp')
-    print(f"User created with ID: {user_id}")
-
-    # Authenticate user
-    is_authenticated = User.authenticate_user('john_doe', 'securepassword')
-    print(f"User authenticated: {is_authenticated}")
-
-    # Authorize user
-    is_authorized = User.authorize_user('john_doe', 'user')
-    print(f"User authorized: {is_authorized}")
-
-    User.update_user(user_id, password='newsecurepassword')
-
-    User.delete_user(user_id)
-
-    DBConnection.close()

@@ -1,6 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
 from database_conn.db_connection import DBConnection
+from constants.constants import SCHEMA_NAME, SALES_TABLE
+
 
 class Sale:
     def __init__(self, sale_id, order_id, product_id, quantity, total_amount, discount_amt, cost_price, sell_price, final_amount):
@@ -16,8 +18,8 @@ class Sale:
         self.date = datetime.now().date()  # Current date
 
     def create_sale(self):
-        query = """
-        INSERT INTO shopdb.sales (
+        query = f"""
+        INSERT INTO {SCHEMA_NAME}.{SALES_TABLE} (
             sale_id, order_id, product_id, quantity, total_amount, discount_amt, price, sell_price, final_amount, sale_date
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """

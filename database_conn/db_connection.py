@@ -40,11 +40,21 @@ class DBConnection:
         # print(f"Query result: {result}")
         return result
 
+    # @classmethod
+    # def fetch_all(cls,query,params=None):
+    #     cursor=cls.get_cursor()
+    #     cursor.execute(query,(params,))
+    #     return cursor.fetchall()
     @classmethod
-    def fetch_all(cls,query,params=None):
-        cursor=cls.get_cursor()
-        cursor.execute(query,(params,))
-        return cursor.fetchall()
+    def fetch_all(cls, query, params=None):
+        cursor = cls.get_cursor()
+        if params is None:
+            cursor.execute(query)
+        else:
+            cursor.execute(query, params)
+        results = cursor.fetchall()
+        cursor.close()  # Close cursor to avoid potential issues
+        return results
 
     @classmethod
     def close(cls):

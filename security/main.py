@@ -1,8 +1,10 @@
+from user import User
+from database_conn.db_connection import DBConnection
 import bcrypt
 
 from database_conn.db_connection import DBConnection
 from user import User
-
+from constants.constants import SCHEMA_NAME
 
 def authenticate_admin():
 
@@ -35,7 +37,7 @@ def menu():
 def create_user():
     username = input("Enter username: ")
     password = input("Enter password: ")
-    role = input("Enter role ( emp,admin): ")
+    role = input("Enter role (emp,admin): ")
     User.create_user(username, password, role)
     print("User Added Successfully")
 
@@ -46,13 +48,14 @@ def update_user():
     password = input("Enter new password (leave blank to keep current): ")
     role = input("Enter new role (leave blank to keep current): ")
     User.update_user(userid, username if username else None, password if password else None, role if role else None)
-    print("User updated successfully.")
+    # print("User updated successfully.")
 
 
 def delete_user():
     userid = input("Enter user ID to delete: ")
     User.delete_user(userid)
-    print("User deleted successfully.")
+    # print("User deleted successfully.")
+
 
 
 def main():

@@ -2,17 +2,17 @@ from datetime import datetime
 from decimal import Decimal
 from database_conn.db_connection import DBConnection
 from security.user import User
-
+from constants.constants import SCHEMA_NAME,SALES_TABLE,PRODUCTS_TABLE
 class ProfitLossStatement:
     def __init__(self):
         pass
 
     def fetch_revenue(self, start_date, end_date):
-        query = """
+        query = f"""
         SELECT
             SUM(final_amount) AS total_revenue
         FROM
-            shopdb.sales
+            {SCHEMA_NAME}.{SALES_TABLE}
         WHERE
             sale_date BETWEEN %s AND %s;
         """
@@ -21,13 +21,13 @@ class ProfitLossStatement:
         return result[0] if result and result[0] is not None else Decimal('0.0')
 
     def fetch_cogs(self, start_date, end_date):
-        query = """
+        query = f"""
         SELECT
             SUM(p.cost_price * s.quantity) AS total_cogs
         FROM
-            shopdb.sales s
+             {SCHEMA_NAME}.sales s
         JOIN
-            shopdb.products p
+             {SCHEMA_NAME}.{PRODUCTS_TABLE} p
         ON
             s.product_id = p.product_id
         WHERE

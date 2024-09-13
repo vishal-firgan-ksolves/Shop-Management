@@ -1,4 +1,6 @@
 from database_conn.db_connection import DBConnection
+from constants.constants import SCHEMA_NAME, PRODUCTS_TABLE, SUPPLIERS_TABLE
+
 
 class Search:
     def __init__(self):
@@ -6,7 +8,7 @@ class Search:
     @staticmethod
     def search_by_category(search_category):
         found_by_category = []
-        query = """SELECT product_id, name, quantity, price FROM shopdb.products WHERE LOWER(category) = %s"""
+        query = f"""SELECT product_id, name, quantity, price FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} WHERE LOWER(category) = %s"""
         result = DBConnection.fetch_all(query, (search_category,))
 
         for row in result:
@@ -43,9 +45,9 @@ class Search:
             return
 
         found_by_supplier = []
-        query = """SELECT p.product_id, p.name, p.quantity, p.price, s.supplier_id, s.name 
-                      FROM shopdb.products p
-                      JOIN shopdb.suppliers s ON p.supplier_id = s.supplier_id
+        query = f"""SELECT p.product_id, p.name, p.quantity, p.price, s.supplier_id, s.name 
+                      FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} p
+                      JOIN {SCHEMA_NAME}.{SUPPLIERS_TABLE} s ON p.supplier_id = s.supplier_id
                       WHERE LOWER(s.name) = %s"""
         result = DBConnection.fetch_all(query, (search_supplier,))
 
@@ -115,14 +117,4 @@ class Search:
             print("No products found with that name.")
 
 
-
-
-# if __name__ == '__main__':
-#     search_string = input("Enter name of product you want to search for: ").lower()
-#     search_category = input("Enter category of products: ").lower()
-#     search_supplier=input("Enter supplier name: ").lower()
-#     search = Search(search_string, search_category,search_supplier)
-#     search.search_by_name()
-#     search.search_by_category()
-#     search.search_by_supplier()
 

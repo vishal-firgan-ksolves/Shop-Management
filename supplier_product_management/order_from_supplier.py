@@ -1,6 +1,7 @@
 import psycopg2
 from database_conn.db_connection import DBConnection
 from product_management import Products
+from constants.constants import SCHEMA_NAME, PURCHASE_ORDERS_TABLE, PRODUCTS_TABLE
 
 
 class PurchaseOrders:
@@ -12,8 +13,8 @@ class PurchaseOrders:
             total_amount = 0.0
             total_amount= Products.get_product_cost(product_id)* quantity
 
-            query = '''
-                INSERT INTO shopdb.purchase_orders (supplier_id, product_id,quantity ,total_amount)
+            query = f'''
+                INSERT INTO {SCHEMA_NAME}.{PURCHASE_ORDERS_TABLE} (supplier_id, product_id,quantity ,total_amount)
                 VALUES (%s, %s, %s,%s)  
             '''
 
@@ -22,11 +23,10 @@ class PurchaseOrders:
         except Exception as e:
             print(f"Error while creating purchase order {e}")
 
-
     @staticmethod
     def update_inventory(product_id, quantity):
-        query = '''
-            UPDATE shopdb.products
+        query = f'''
+            UPDATE {SCHEMA_NAME}.{PRODUCTS_TABLE}
             SET quantity = quantity + %s
             WHERE product_id = %s
         '''
@@ -38,11 +38,11 @@ class PurchaseOrders:
 
     @staticmethod
     def delete_order(order_id):
-        query = '''
-            DELETE FROM shopdb.purchase_orders
+        query = f'''
+            DELETE FROM {SCHEMA_NAME}.{PURCHASE_ORDERS_TABLE}
             WHERE order_id = %s
         '''
-        q="select product_id,quantity from shopdb.purchase_orders where order_id=%s"
+        q=f"select product_id,quantity from {SCHEMA_NAME}.{PURCHASE_ORDERS_TABLE} where order_id=%s"
         p_id,quan=DBConnection.fetch_one(q,(order_id,))
 
         try:
@@ -55,15 +55,15 @@ class PurchaseOrders:
     @staticmethod
     def fetch_order(order_id):
 
-        query = '''
-            SELECT * FROM shopdb.purchase_orders
+        query = f'''
+            SELECT * FROM {SCHEMA_NAME}.{PURCHASE_ORDERS_TABLE}
             WHERE order_id = %s
         '''
         return DBConnection.fetch_one(query, (order_id,))
 
     @staticmethod
     def fetch_all_orders():
-        query = '''
-            SELECT * FROM shopdb.purchase_orders
+        query = f'''
+            SELECT * FROM {SCHEMA_NAME}.{PURCHASE_ORDERS_TABLE}
         '''
         return DBConnection.fetch_all(query)

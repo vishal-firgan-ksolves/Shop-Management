@@ -1,12 +1,12 @@
 import psycopg2
 from database_conn.db_connection import DBConnection
-
+from constants.constants import SCHEMA_NAME,PRODUCTS_TABLE
 class Products:
 
     @staticmethod
     def create_product(name, price, cost_price, supplier_id, quantity):
-        query = '''
-            INSERT INTO shopdb.products (name, price, cost_price, supplier_id, quantity)
+        query = f'''
+            INSERT INTO {SCHEMA_NAME}.{PRODUCTS_TABLE} (name, price, cost_price, supplier_id, quantity)
             VALUES (%s, %s, %s, %s, %s)
         '''
         try:
@@ -40,7 +40,7 @@ class Products:
             raise ValueError("No fields to update")
 
         query = f'''
-            UPDATE shopdb.products
+            UPDATE {SCHEMA_NAME}.{PRODUCTS_TABLE}
             SET {', '.join(updates)}
             WHERE product_id = %s
         '''
@@ -51,10 +51,11 @@ class Products:
             print("Product updated successfully.")
         except Exception as e:
             print(f"Error updating product: {e}")
+
     @staticmethod
     def delete_product(product_id):
-        query = '''
-            DELETE FROM shopdb.products
+        query = f'''
+            DELETE FROM {SCHEMA_NAME}.{PRODUCTS_TABLE}
             WHERE product_id = %s
         '''
         try:
@@ -65,15 +66,27 @@ class Products:
 
     @staticmethod
     def fetch_product(product_id):
-        query = '''
-            SELECT * FROM shopdb.products
+        query = f'''
+            SELECT * FROM {SCHEMA_NAME}.{PRODUCTS_TABLE}
             WHERE product_id = %s
         '''
         return DBConnection.fetch_one(query, (product_id,))
 
     @staticmethod
     def fetch_all_products():
-        query = '''
-            SELECT * FROM shopdb.products
+        query = f'''
+            SELECT * FROM {SCHEMA_NAME}.{PRODUCTS_TABLE}
         '''
         return DBConnection.fetch_all(query)
+
+    @staticmethod
+    def get_product_cost(product_id):
+
+        query = f'''
+               SELECT cost_price FROM {SCHEMA_NAME}.{PRODUCTS_TABLE}
+               WHERE product_id = %s
+           '''
+        result = DBConnection.fetch_one(query, (product_id,))
+        return result[0] if result else 0.0
+
+

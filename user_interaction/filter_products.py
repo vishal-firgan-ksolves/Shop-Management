@@ -1,5 +1,5 @@
 from database_conn.db_connection import DBConnection
-
+from constants.constants import SCHEMA_NAME,PRODUCTS_TABLE
 
 class Filter:
     def __init__(self, sort_order):
@@ -16,7 +16,7 @@ class Filter:
         sort_direction = 'ASC' if self.sort_order == 'low_to_high' else 'DESC'
 
         query = f"""SELECT product_id, name, quantity, price 
-                    FROM shopdb.products 
+                    FROM {SCHEMA_NAME}.{PRODUCTS_TABLE} 
                     ORDER BY price {sort_direction}"""
 
         result = DBConnection.fetch_all(query)
@@ -37,8 +37,3 @@ class Filter:
         else:
             print("No products found.")
 
-
-# if __name__ == '__main__':
-#     sort_order = input("Enter sort order ('low_to_high' or 'high_to_low'): ").strip()
-#     filter = Filter(sort_order)
-#     filter.filter_by_price()

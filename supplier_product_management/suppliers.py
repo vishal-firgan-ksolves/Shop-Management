@@ -1,63 +1,56 @@
-import psycopg2
-from psycopg2 import sql
+from dateutil.relativedelta import SU
+
 from database_conn.db_connection import DBConnection
-from security.user import User
+from constants.constants import SCHEMA_NAME,SUPPLIERS_TABLE
 class Suppliers:
 
     @staticmethod
     def create_supplier(name, contact_no, email, address):
-        query = '''
-            INSERT INTO shopdb.suppliers (name, contact_no, email, address)
+        query = f'''
+            INSERT INTO {SCHEMA_NAME}.{SUPPLIERS_TABLE} (name, contact_no, email, address)
             VALUES (%s, %s, %s, %s)
         '''
         DBConnection.execute_query(query, (name, contact_no, email, address))
         print("Created Successfully")
 
     @staticmethod
+    def view_supplier(supplier_id):
+
+        query = f'''
+                SELECT * FROM {SCHEMA_NAME}.{SUPPLIERS_TABLE}
+                WHERE supplier_id = %s
+            '''
+        result = DBConnection.fetch_one(query, (supplier_id,))
+        if result:
+            print("Supplier Details:")
+            print(f"Supplier ID: {result[0]}")
+            print(f"Name: {result[1]}")
+            print(f"Contact No: {result[2]}")
+            print(f"Email: {result[3]}")
+            print(f"Address: {result[4]}")
+        else:
+            print("Supplier not found.")
+
+    @staticmethod
+    def list_all_suppliers():
+
+        query = f'''
+                SELECT * FROM {SCHEMA_NAME}.{SUPPLIERS_TABLE}
+            '''
+        results = DBConnection.fetch_all(query)
+        if results:
+            print("List of Suppliers:")
+            for supplier in results:
+                print(
+                    f"Supplier ID: {supplier[0]}, Name: {supplier[1]}, Contact No: {supplier[2]}, Email: {supplier[3]}, Address: {supplier[4]}")
+        else:
+            print("No suppliers found.")
+
+    @staticmethod
     def delete_supplier(supplierid):
-        query = '''
-            DELETE FROM shopdb.suppliers
+        query = f'''
+            DELETE FROM ={SCHEMA_NAME}.{SUPPLIERS_TABLE}
             WHERE supplier_id = %s
         '''
         DBConnection.execute_query(query, (supplierid,))
         print("Deleted Successfully")
-    @staticmethod
-    def authenticate_admin():
-
-        username = input("Enter admin username: ")
-        password = input("Enter admin password: ")
-
-        if User.authenticate_user(username, password):
-            if User.authorize_user(username, 'admin'):
-                print("Admin authenticated successfully.")
-                return username
-            else:
-                print("User does not have admin role.")
-                return None
-        else:
-            print("Authentication failed.")
-            return None
-
-
-# Example usage:
-# if __name__ == "__main__":
-#
-#     is_valid=Suppliers.authenticate_admin()
-#
-#     if is_valid:
-#         while True:
-#             choice = input("Enter your choice (1: Create / 2: Delete / 3: Exit): ")
-#             if choice == '1':
-#                 name=input("Enter name of supp: ")
-#                 contact_no=input("Enter contanct number of supp: ")
-#                 email=input("Enter email o supp: ")
-#                 address=input("Enter address of supp: ")
-#                 Suppliers.create_supplier( name, contact_no, email, address)
-#             elif choice == '2':
-#                 supplier_id = int(input("Enter the supplier ID to delete: "))
-#                 Suppliers.delete_supplier(supplier_id)
-#             elif choice == '3':
-#                 break
-#             else:
-#                 print("Invalid choice. Please enter a number between 1 and 3.")
-#     DBConnection.close()

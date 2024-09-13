@@ -5,7 +5,7 @@ import psycopg2
 from concurrent.futures import ThreadPoolExecutor
 from database_conn.db_connection import DBConnection
 from psycopg2 import connect
-
+from constants.constants import SCHEMA_NAME,PRODUCTS_TABLE,CUSTOMERS_TABLE,SUPPLIERS_TABLE
 
 class ZipExtractor:
     def __init__(self, zip_path, extract_to):
@@ -28,8 +28,8 @@ class DatabaseHandler:
             df = pd.read_csv(file_path)
             # Insert data into db
             for index, row in df.iterrows():
-                self.cur.execute('''
-                    INSERT INTO shopdb.products (product_id, name, category, price, quantity, expiry_date, supplier_id, cost_price)
+                self.cur.execute(f'''
+                    INSERT INTO {SCHEMA_NAME}.{PRODUCTS_TABLE} (product_id, name, category, price, quantity, expiry_date, supplier_id, cost_price)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ''', (row['product_id'], row['name'], row['category'], row['price'], row['quantity'],
                       row['expiry_date'] if pd.notna(row['expiry_date']) else None, row['supplier_id'],
                       row['cost_price']))
@@ -54,7 +54,7 @@ class DatabaseHandler:
 
     def update_product(self, product_id=None, name=None, category=None, price=None, quantity=None, expiry_date=None,
                        supplier_id=None, cost_price=None):
-        query = "update shopdb.products set "
+        query = f"update {SCHEMA_NAME}.{PRODUCTS_TABLE} set "
         # list to store the set clauses
         set_clauses = []
         # list to store the values for the query

@@ -1,21 +1,21 @@
 from datetime import datetime, timedelta
 from database_conn.db_connection import DBConnection
 from security.user import User
-
+from constants.constants import SCHEMA_NAME,SALES_TABLE,TRANSACTION_TABLE,PRODUCTS_TABLE
 class SalesReport:
     def __init__(self):
        pass
 
     def generate_daily_report(self):
-        query = """
+        query = f"""
     SELECT
     sale_date AS period,
     COUNT( order_id) AS total_sales,
     SUM(final_amount) AS total_revenue,
     SUM(final_amount) - SUM(p.cost_price * s.quantity) AS total_profit
      FROM
-    shopdb.sales s
-    join shopdb.products p 
+    {SCHEMA_NAME}.{SALES_TABLE} s
+    join {SCHEMA_NAME}.{PRODUCTS_TABLE} p 
     on s.product_id =p.product_id 
      WHERE
     sale_date = CURRENT_DATE
@@ -28,15 +28,15 @@ class SalesReport:
         start_date = datetime.now() - timedelta(days=datetime.now().weekday())
         end_date = datetime.now()
 
-        query = """
-         SELECT
+        query = f"""
+        SELECT
         date_trunc('week', s.sale_date) AS period,
         COUNT(s.order_id) AS total_sales,
         SUM(s.final_amount) AS total_revenue,
         SUM(s.final_amount) - SUM(p.cost_price * s.quantity) AS total_profit
           FROM
-        shopdb.sales s
-        JOIN shopdb.products p 
+        {SCHEMA_NAME}.{SALES_TABLE} s
+        JOIN {SCHEMA_NAME}.{PRODUCTS_TABLE} p 
         ON s.product_id = p.product_id
           WHERE
         s.sale_date >= date_trunc('week', CURRENT_DATE) 
@@ -48,16 +48,16 @@ class SalesReport:
         start_date = datetime.now().replace(day=1)
         end_date = datetime.now()
 
-        query = """
+        query = f"""
           SELECT
         date_trunc('month', s.sale_date) AS period,
         COUNT(s.order_id) AS total_sales,
         SUM(s.final_amount) AS total_revenue,
         SUM(s.final_amount) - SUM(p.cost_price * s.quantity) AS total_profit
           FROM
-        shopdb.sales s
+         {SCHEMA_NAME}.{SALES_TABLE}  s
           JOIN 
-        shopdb.products p 
+        {SCHEMA_NAME}.{PRODUCTS_TABLE} p 
         ON s.product_id = p.product_id
            WHERE
         s.sale_date >= date_trunc('month', CURRENT_DATE)
@@ -102,6 +102,7 @@ if __name__ == "__main__":
         else:
             print("User does not have admin role.")
     else:
+        DBConnection.close()
         print("Authentication failed.")
 
 
